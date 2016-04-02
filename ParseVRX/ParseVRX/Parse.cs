@@ -12,7 +12,26 @@ namespace ParseVRX
 {
     class Parse
     {
-        public void Download (string url)
+        public static int countUrl = 0;
+        public static int countUrlAll;
+
+
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="urlPage">Считываем общее кол-во страниц</param>
+        public Parse(string urlPage)
+        {
+            Download(urlPage, "countUrlAll.txt"); //скачиваем html в текстовый файл
+            countUrlAll = GetPage(); //Парсим HTML и возвращаем общее кол-во страниц
+        }
+
+
+        /// <summary>
+        /// Загружаем HTML в TXT
+        /// </summary>
+        /// <param name="url">ссылка, что загружать</param>
+        public void Download (string url, string txt)
         {
             using (var request = new HttpRequest())
             {
@@ -20,9 +39,92 @@ namespace ParseVRX
                 HttpResponse response = request.Get( url );
                 // Принимаем тело сообщения в виде строки.
                 string content = response.ToString();
-                File.WriteAllText("ksota.txt", content);
+                File.WriteAllText(txt, content);
             }
         }
+
+
+        /// <summary>
+        /// Считываес HTML в класс
+        /// </summary>
+        /// <param name="txt">имя текстового файла где хранится HTML</param>
+        /// <returns></returns>
+        HtmlDocument ReadHtml(string txt)
+        {
+            HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
+            string html = System.IO.File.ReadAllText(txt); //Присваиваем текстовой переменной html-код
+            doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
+
+            return doc;
+        }
+
+
+        /// <summary>
+        /// Получаем ссылку на след.стр.
+        /// </summary>
+        /// <param name="url">Ссылка без индекса</param>
+        /// <returns>Ссылка</returns>
+        public string GetUrl(string url)
+        {
+            string urlParse = url + countUrl;
+            countUrl++;
+
+            return urlParse;
+        }
+
+
+        /// <summary>
+        /// Получаем общее кол-во страниц
+        /// </summary>
+        /// <returns>Возвращаем общее кол-во страниц</returns>
+        int GetPage()
+        {
+            string sPage = "";      //кол-во страниц
+            HtmlDocument doc = ReadHtml("ksota.txt");
+
+            // Извлекаем кол-во страниц
+            HtmlNodeCollection pageNodes = doc.DocumentNode.SelectNodes("//ul[@class='paging']/li");
+            foreach (var page in pageNodes)
+            {
+                sPage = page.InnerText;
+                if (sPage.IndexOf("...") != -1)
+                {
+
+                    string str = "";
+                    for (int j = 0; j < sPage.Length; j++)
+                    {
+                        if (Convert.ToInt32(sPage[j]) == 46)
+                        {
+
+                        }
+                        else if (Convert.ToInt32(sPage[j]) == 32)
+                        {
+
+                        }
+                        else
+                        {
+                            str += sPage[j];
+                        }
+                    }
+
+                    sPage = str;
+                }
+            }
+
+            return Convert.ToInt32(sPage);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
         /*public Task<int> ConnectAndParse(string url)
         {
@@ -33,27 +135,16 @@ namespace ParseVRX
             });
         }*/
 
-        public void ConnectAndParse(string url)
-        {
-            Download(url);
-            GetContent();
-        }
 
-        public int GetContent()
+
+
+        public void GetContent()
         {
             string sTypeFlat = "";  //тип квартирв
             string sArea = "";      //размер квартиры
             string sWall = "";      //отделка
-            string sPage = "";      //кол-во страниц
 
-            // Создаём экземпляр класса
-            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-
-            // Присваиваем текстовой переменной k html-код
-            string html = System.IO.File.ReadAllText("ksota.txt");
-
-            // Загружаем в класс (парсер) наш html
-            doc.LoadHtml(html);
+            HtmlDocument doc = ReadHtml("ksota.txt");
 
             // Извлекаем всё текстовое, что есть в теге <div> с классом bla1
             HtmlNode bodyNode = doc.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
@@ -115,34 +206,7 @@ namespace ParseVRX
                 }
 
 
-                // Извлекаем кол-во страниц
-                HtmlNodeCollection pageNodes = doc.DocumentNode.SelectNodes("//ul[@class='paging']/li");
-                foreach (var page in pageNodes)
-                {
-                    sPage = page.InnerText;
-                    if (sPage.IndexOf("...")!=-1)
-                    {
-
-                        string str = "";
-                        for (int j = 0; j < sPage.Length; j++)
-                        {
-                            if (Convert.ToInt32( sPage[j]) == 46)
-                            {
-
-                            }
-                            else if (Convert.ToInt32(sPage[j]) == 32)
-                            {
-
-                            }
-                            else
-                            {
-                                str += sPage[j];
-                            }
-                        }
-
-                        sPage = str;
-                    }
-                }
+                
 
 
                 /*
@@ -163,10 +227,10 @@ namespace ParseVRX
             }
 
             //textBox1.Text = bodyNodeCol.;
-            if (sPage == "175")
+            /*if (sPage == "175")
                 return Convert.ToInt32(sPage);
             else
-                return 175;
+                return 175;*/
         }
 
         public string Utf8ToWin1251(string str)
