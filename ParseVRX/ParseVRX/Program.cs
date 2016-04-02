@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace ParseVRX
 {
@@ -10,6 +7,12 @@ namespace ParseVRX
     {
         static void Main(string[] args)
         {
+
+            vrxThread vrxThreadOther = new vrxThread();
+            //Thread thvrx = new Thread(vrxThreadOther.Run); // поток для выполнения дочерних потоков
+            //thvrx.Start();
+
+            Console.ReadLine();
         }
     }
 }
