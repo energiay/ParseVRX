@@ -16,7 +16,7 @@ namespace ParseVRX
 
         public vrxThread()
         {
-            countThread = 3;
+            countThread = 30;
 
             Thread watching = new Thread(Watching);
             watching.Name = "Watching";
@@ -26,26 +26,24 @@ namespace ParseVRX
 
         public void Run(object url)
         {
-            /*
-            File.WriteAllText("ksota.csv", parse.Utf8ToWin1251("sep=|\n"), Encoding.GetEncoding("windows-1251"));
 
-            string head = "Операция (аренда/Продажа)|дата публикации|заголовок|тип квартиры|общая площадь|цена|материал стен" + "\n";
-            File.AppendAllText("ksota.csv", parse.Utf8ToWin1251(head), Encoding.GetEncoding("windows-1251"));
+            Thread t = Thread.CurrentThread;
+            parse.Download( (string)url, t.Name.ToString()+".txt" );
 
-            //Загрузка первой стр. HTML в текстовый файл (C:\ksota.txt)
-            url = "http://www.ksota.ru/catalog/flat/";
-            parse.Download( (string)url, "ksota.txt" ); //???????????????????????????????????????????????
+            parse.GetContent(t.Name.ToString() + ".txt");
 
-            parse.GetContent();
-            */
-
-            Thread.Sleep(120);
-            
         }
 
         public void Watching()
         {
             string urlParse = "http://www.ksota.ru/catalog/flat/?p=";
+
+            // Потготовка CSV файла для записи
+            File.WriteAllText("ksota.csv", parse.Utf8ToWin1251("sep=|\n"), Encoding.GetEncoding("windows-1251"));
+            string head = "Операция (аренда/Продажа)|дата публикации|заголовок|тип квартиры|общая площадь|цена|материал стен" + "\n";
+            File.AppendAllText("ksota.csv", parse.Utf8ToWin1251(head), Encoding.GetEncoding("windows-1251"));
+
+            Console.Write("Страниц прочитано: ");
 
             // создание потоков
             for (int i = 0; i < countThread; i++)
@@ -55,16 +53,20 @@ namespace ParseVRX
                 thList[thList.Count - 1].Start(parse.GetUrl(urlParse));
             }
 
+            
+
+
 
             // Пока страницы существуют, мы передаем ссылки освободившимся потокам
-             while (Parse.countUrl < Parse.countUrlAll)
+            while (Parse.countUrl < Parse.countUrlAll)
              {
                 for (int i = 0; i < thList.Count; i++)
                 {
-                    //Console.WriteLine(thList[i].Name + " = " +thList[i].ThreadState );
-                    if (thList[i].ThreadState == "Stopped")
+                    if (thList[i].ThreadState.ToString() == "Stopped")
                     {
-                        b = true;
+                        thList[i] = new Thread(new ParameterizedThreadStart(Run));
+                        thList[i].Name = "Thread" + i;
+                        thList[i].Start(parse.GetUrl(urlParse));
                     }
                 }
              }

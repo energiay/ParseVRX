@@ -14,6 +14,7 @@ namespace ParseVRX
     {
         public static int countUrl = 0;
         public static int countUrlAll;
+        static object locker = new object();
 
 
         /// <summary>
@@ -23,7 +24,7 @@ namespace ParseVRX
         public Parse(string urlPage)
         {
             Download(urlPage, "countUrlAll.txt"); //скачиваем html в текстовый файл
-            countUrlAll = GetPage(); //Парсим HTML и возвращаем общее кол-во страниц
+            countUrlAll = GetPage("countUrlAll.txt"); //Парсим HTML и возвращаем общее кол-во страниц
         }
 
 
@@ -67,6 +68,7 @@ namespace ParseVRX
         public string GetUrl(string url)
         {
             string urlParse = url + countUrl;
+            Console.WriteLine(Parse.countUrl + " из " + Parse.countUrlAll);
             countUrl++;
 
             return urlParse;
@@ -77,10 +79,10 @@ namespace ParseVRX
         /// Получаем общее кол-во страниц
         /// </summary>
         /// <returns>Возвращаем общее кол-во страниц</returns>
-        int GetPage()
+        int GetPage(string txt)
         {
             string sPage = "";      //кол-во страниц
-            HtmlDocument doc = ReadHtml("ksota.txt");
+            HtmlDocument doc = ReadHtml(txt);
 
             // Извлекаем кол-во страниц
             HtmlNodeCollection pageNodes = doc.DocumentNode.SelectNodes("//ul[@class='paging']/li");
@@ -138,13 +140,13 @@ namespace ParseVRX
 
 
 
-        public void GetContent()
+        public void GetContent(string txt)
         {
             string sTypeFlat = "";  //тип квартирв
             string sArea = "";      //размер квартиры
             string sWall = "";      //отделка
 
-            HtmlDocument doc = ReadHtml("ksota.txt");
+            HtmlDocument doc = ReadHtml(txt);
 
             // Извлекаем всё текстовое, что есть в теге <div> с классом bla1
             HtmlNode bodyNode = doc.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
@@ -222,7 +224,11 @@ namespace ParseVRX
                 */
                 //string body = "Операция (аренда/Продажа)|дата публикации|заголовок|тип квартиры|общая площадь|цена|материал стен";
                 string body = Operation.InnerText +"|"+ DateShow.InnerText + "|" + Title.InnerText + "|" + sTypeFlat + "|" + sArea + "|" + ((Price.InnerText).Replace(" ", "")).Replace("Р", "") + "|" + sWall + "\n";
-                File.AppendAllText("ksota.csv", Utf8ToWin1251(body), Encoding.GetEncoding("windows-1251"));
+
+                lock (locker)
+                {
+                    File.AppendAllText("ksota.csv", Utf8ToWin1251(body), Encoding.GetEncoding("windows-1251"));
+                }
 
             }
 
