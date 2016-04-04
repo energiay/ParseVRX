@@ -11,12 +11,17 @@ namespace ParseVRX
 {
     class VRXParse
     {
-        string pageParse; //неполная строка url
+        public static string pageParse; //неполная строка url
         string prePage = "&page="; // префикс для страниц
         public static int countPage = 0; // номер страцицы
         public static int countPageAll;  // общее кол-во страниц
+        //string html; // HTML Страницы
+        HtmlDocument docPageParse; // Загруженный html листа в класс HtmlDocument
 
         static object lockerPage = new object();
+
+
+
 
         /// <summary>
         /// Конструктор
@@ -27,8 +32,15 @@ namespace ParseVRX
             pageParse = web;
 
             // Загружаю HTML и передаю ее в класс HtmlDocument
-            HtmlDocument doc = ReadHtml( Download(pageParse) );
-            countPageAll = GetPage(doc);
+            Download( pageParse );
+            countPageAll = GetPageParse( docPageParse );
+            Console.WriteLine( countPageAll );
+        }
+
+
+        public VRXParse()
+        {
+
         }
 
 
@@ -36,16 +48,39 @@ namespace ParseVRX
         /// Загружаем HTML
         /// </summary>
         /// <param name="url">ссылка, что загружать</param>
-        public string Download(string url)
+        public void Download(string url)
         {
-            string html;
+
+            /*
+            
             using (var request = new HttpRequest())
             {
                 HttpResponse response = request.Get(url);
-                html = response.ToString();
+                string html = response.ToString();
+                ReadHtml(html);
+                File.WriteAllText("VRX.txt", html);
+            }
+            
+             */
+
+            using (var request = new HttpRequest())
+            {
+                var reqParams = new RequestParams();
+                
+                reqParams["viewtype"] = "0";
+                reqParams["onpage"] = "100";        // Кол-во записей на странице
+                reqParams["findfolders"] = "(1)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
+                //reqParams["findfolders"] = "("+ findfolders + ")";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
+                reqParams["page"] = "1";            // номер страницы для отображения
+                reqParams["findobject"] = "";       // Объект (не заполняется)
+
+                string html = request.Post(url, reqParams).ToString();
+                ReadHtml(html);
                 //File.WriteAllText("VRX.txt", html);
             }
-            return html;
+
+            
+
         }
 
 
@@ -54,12 +89,11 @@ namespace ParseVRX
         /// </summary>
         /// <param name="txt">имя текстового файла где хранится HTML</param>
         /// <returns></returns>
-        HtmlDocument ReadHtml(string content)
+        void ReadHtml(string content)
         {
             HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
             doc.LoadHtml(content); //Загружаем в класс (парсер) наш html
-
-            return doc;
+            docPageParse = doc;
         }
 
 
@@ -67,7 +101,7 @@ namespace ParseVRX
         /// Получаем общее кол-во страниц
         /// </summary>
         /// <returns>Возвращаем общее кол-во страниц</returns>
-        int GetPage(HtmlDocument doc)
+        int GetPageParse(HtmlDocument doc)
         {          
             string sPage = "0";     //кол-во страниц
 
@@ -87,15 +121,32 @@ namespace ParseVRX
             return 0;
         }
 
-        public string GetUrl(string url)
+
+        /// <summary>
+        /// Получение ссылки на нужную страницу
+        /// </summary>
+        /// <param name="url">недострока</param>
+        /// <returns>Строка с префисои и номером страницы</returns>
+        public string GetUrl()
         {
-            lock(lockerPage)
+            lock (lockerPage)
             {
                 countPage++;
-                url += countPage;
             }
 
-            return url;
+            return pageParse + prePage + countPage;
+        }
+
+
+        static public string Utf8ToWin1251(string str)
+        {
+            Encoding srcEncodingFormat = Encoding.UTF8;
+            Encoding dstEncodingFormat = Encoding.GetEncoding("windows-1251");
+
+            byte[] originalByteString = srcEncodingFormat.GetBytes(str);
+            byte[] convertedByteString = Encoding.Convert(srcEncodingFormat, dstEncodingFormat, originalByteString);
+
+            return dstEncodingFormat.GetString(convertedByteString);
         }
 
     }
