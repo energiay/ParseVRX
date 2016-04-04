@@ -51,8 +51,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parse.cs" />
+    <Compile Include="ParseVRX.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VRX.cs" />
+    <Compile Include="VRXParse.cs" />
     <Compile Include="vrxThread.cs" />
   </ItemGroup>
   <ItemGroup>

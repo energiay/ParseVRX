@@ -10,13 +10,16 @@ namespace ParseVRX
     class vrxThread
     {
         int countThread; //кол-во потоков
-        Parse parse = new Parse("http://www.ksota.ru/catalog/flat/");
+        string urlParse;
+        Parse parse;
         Thread thParse; //потки
         List<Thread> thList = new List<Thread>();
 
-        public vrxThread()
+        public vrxThread(string web)
         {
-            countThread = 30;
+            urlParse = web;
+            parse = new Parse(urlParse);
+            countThread = 1;
 
             Thread watching = new Thread(Watching);
             watching.Name = "Watching";
@@ -29,14 +32,21 @@ namespace ParseVRX
 
             Thread t = Thread.CurrentThread;
             parse.Download( (string)url, t.Name.ToString()+".txt" );
+            parse.GetContent(t.Name.ToString() + ".txt");
 
+        }
+
+        public void RunParseVRX(object url)
+        {
+            Thread t = Thread.CurrentThread;
+            parse.Download((string)url, t.Name.ToString() + ".txt");
             parse.GetContent(t.Name.ToString() + ".txt");
 
         }
 
         public void Watching()
         {
-            string urlParse = "http://www.ksota.ru/catalog/flat/?p=";
+            //string urlParse = "http://www.ksota.ru/catalog/flat/?p=";
 
             // Потготовка CSV файла для записи
             File.WriteAllText("ksota.csv", parse.Utf8ToWin1251("sep=|\n"), Encoding.GetEncoding("windows-1251"));
@@ -49,7 +59,7 @@ namespace ParseVRX
             for (int i = 0; i < countThread; i++)
             {
                 thList.Add( new Thread( new ParameterizedThreadStart(Run) ) );
-                thList[thList.Count - 1].Name = "Thread" + i;
+                thList[thList.Count - 1].Name = "Thread#" + i;
                 thList[thList.Count - 1].Start(parse.GetUrl(urlParse));
             }
 
