@@ -12,8 +12,11 @@ namespace ParseVRX
     class VRXParse
     {
         string pageParse; //неполная строка url
-        public static int countPage = 0; // первая страница для парсинга
+        string prePage = "&page="; // префикс для страниц
+        public static int countPage = 0; // номер страцицы
         public static int countPageAll;  // общее кол-во страниц
+
+        static object lockerPage = new object();
 
         /// <summary>
         /// Конструктор
@@ -82,6 +85,17 @@ namespace ParseVRX
             }
 
             return 0;
+        }
+
+        public string GetUrl(string url)
+        {
+            lock(lockerPage)
+            {
+                countPage++;
+                url += countPage;
+            }
+
+            return url;
         }
 
     }
