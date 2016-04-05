@@ -12,35 +12,46 @@ namespace ParseVRX
     class VRXParse
     {
         public static string pageParse; //неполная строка url
-        string prePage = "&page="; // префикс для страниц
-        public static int countPage = 0; // номер страцицы
+        //public static int countPage = 0; // номер страцицы
+        int countPageParse;
         public static int countPageAll;  // общее кол-во страниц
+
+        string findfoldersParse;
+        string prePage = "&page="; // префикс для страниц
+        
         //string html; // HTML Страницы
         HtmlDocument docPageParse; // Загруженный html листа в класс HtmlDocument
 
         static object lockerPage = new object();
 
+        // Свойства с данными после парсинга
 
+        
+
+        ////////////////////////////////////
 
 
         /// <summary>
         /// Конструктор
         /// </summary>
         /// <param name="web">строка парсинга</param>
-        public VRXParse(string web)
+        public VRXParse(string web, string findfolders, int page)
         {
             pageParse = web;
+            findfoldersParse = findfolders;
+            countPageParse = page;
 
             // Загружаю HTML и передаю ее в класс HtmlDocument
-            Download( pageParse );
+            Download();
             countPageAll = GetPageParse( docPageParse );
             Console.WriteLine( countPageAll );
         }
 
 
-        public VRXParse()
+        public VRXParse(string findfolders, int _countPageParse)
         {
-
+            findfoldersParse = findfolders;
+            countPageParse = _countPageParse;
         }
 
 
@@ -48,7 +59,7 @@ namespace ParseVRX
         /// Загружаем HTML
         /// </summary>
         /// <param name="url">ссылка, что загружать</param>
-        public void Download(string url)
+        public void Download()
         {
 
             /*
@@ -69,12 +80,12 @@ namespace ParseVRX
                 
                 reqParams["viewtype"] = "0";
                 reqParams["onpage"] = "100";        // Кол-во записей на странице
-                reqParams["findfolders"] = "(1)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
-                //reqParams["findfolders"] = "("+ findfolders + ")";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
-                reqParams["page"] = "1";            // номер страницы для отображения
+                //reqParams["findfolders"] = "(2)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
+                reqParams["findfolders"] = "("+ findfoldersParse + ")";   // Какой раздел отображаем (1-Вторичка, 2-Новостройка, 3-Нежмлое, 4-дома и котеджи, 5-участки, 6-гаражи)
+                reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
                 reqParams["findobject"] = "";       // Объект (не заполняется)
 
-                string html = request.Post(url, reqParams).ToString();
+                string html = request.Post(pageParse, reqParams).ToString();
                 ReadHtml(html);
                 //File.WriteAllText("VRX.txt", html);
             }
@@ -123,18 +134,23 @@ namespace ParseVRX
 
 
         /// <summary>
-        /// Получение ссылки на нужную страницу
+        /// След.страница
         /// </summary>
-        /// <param name="url">недострока</param>
-        /// <returns>Строка с префисои и номером страницы</returns>
-        public string GetUrl()
+        public void GetNextPage()
         {
             lock (lockerPage)
             {
-                countPage++;
+                countPageParse++;
             }
+        }
 
-            return pageParse + prePage + countPage;
+
+        void Get
+
+
+        public void GetContent()
+        {
+
         }
 
 

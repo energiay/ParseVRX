@@ -12,14 +12,18 @@ namespace ParseVRX
     {
         string pageParse;
         int threadCount;
+        string findfoldersParse;
+        int countPageParse;
         List<Thread> thList = new List<Thread>();
 
-        public VRX (string web)
+        public VRX (string web, string findfolders, int page)
         {
             threadCount = 1;
             pageParse = web;
+            findfoldersParse = findfolders;
+            countPageParse = page;
             //Thread thWatch = new Thread();
-            VRXParse vrx = new VRXParse( pageParse );
+            VRXParse vrx = new VRXParse( pageParse, findfolders, page );
             //ThreadVRX();
         }
 
@@ -27,9 +31,8 @@ namespace ParseVRX
         public void Run(object url)
         {
             VRXParse parse = (VRXParse)url;
-
-            parse.Download( parse.GetUrl() );
-            
+            parse.Download();
+            parse.GetContent();
         }
 
 
@@ -41,16 +44,16 @@ namespace ParseVRX
             string head = "Объект;Район;Место;Адрес;Площадь(общ);Этаж;Этажей" + "\n";
             File.AppendAllText("vrx_all.csv", VRXParse.Utf8ToWin1251(head), Encoding.GetEncoding("windows-1251"));
 
-
             for (int i = 0; i < threadCount; i++)
             {
                 thList.Add( new Thread( new ParameterizedThreadStart(Run)) );
                 thList[thList.Count - 1].Name = "Thread#" + i;
-                thList[thList.Count - 1].Start( new VRXParse() );
+                thList[thList.Count - 1].Start( new VRXParse(findfoldersParse, countPageParse) );
+                countPageParse++;
             }
 
 
-            while (VRXParse.countPage < VRXParse.countPageAll)
+            while (countPageParse <= VRXParse.countPageAll)
             {
                 for (int i = 0; i < threadCount; i++)
                 {
@@ -58,7 +61,7 @@ namespace ParseVRX
                     
                     if ()
                     {
-
+                        countPageParse++;
                     }
                     
                     */
