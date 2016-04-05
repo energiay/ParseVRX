@@ -24,7 +24,7 @@ namespace ParseVRX
             countPageParse = page;
             //Thread thWatch = new Thread();
             VRXParse vrx = new VRXParse( pageParse, findfolders, page );
-            //ThreadVRX();
+            ThreadVRX();
         }
 
 
@@ -49,7 +49,6 @@ namespace ParseVRX
                 thList.Add( new Thread( new ParameterizedThreadStart(Run)) );
                 thList[thList.Count - 1].Name = "Thread#" + i;
                 thList[thList.Count - 1].Start( new VRXParse(findfoldersParse, countPageParse) );
-                countPageParse++;
             }
 
 

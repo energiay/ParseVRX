@@ -11,18 +11,21 @@ namespace ParseVRX
 {
     class VRXParse
     {
-        public static string pageParse; //неполная строка url
+        public static string pageParse; // Cтрока url
+        public static string pageRecordParse = "http://www.vrx.ru/data/"; // Cтрока url для записи
+        
         //public static int countPage = 0; // номер страцицы
         int countPageParse;
         public static int countPageAll;  // общее кол-во страниц
 
         string findfoldersParse;
-        string prePage = "&page="; // префикс для страниц
+        //string prePage = "&page="; // префикс для страниц
         
         //string html; // HTML Страницы
         HtmlDocument docPageParse; // Загруженный html листа в класс HtmlDocument
 
         static object lockerPage = new object();
+        static object lockerPageCount = new object();
 
         // Свойства с данными после парсинга
 
@@ -55,39 +58,47 @@ namespace ParseVRX
         }
 
 
+        HtmlDocument Download(string url)
+        {
+
+           using (var request = new HttpRequest())
+           {
+               HttpResponse response = request.Get(url);
+               string html = response.ToString();
+                HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
+                doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
+                return doc;
+            }
+
+        }
+
+
         /// <summary>
         /// Загружаем HTML
         /// </summary>
         /// <param name="url">ссылка, что загружать</param>
         public void Download()
         {
-
-            /*
-            
-            using (var request = new HttpRequest())
-            {
-                HttpResponse response = request.Get(url);
-                string html = response.ToString();
-                ReadHtml(html);
-                File.WriteAllText("VRX.txt", html);
-            }
-            
-             */
-
             using (var request = new HttpRequest())
             {
                 var reqParams = new RequestParams();
                 
-                reqParams["viewtype"] = "0";
+                reqParams["viewtype"] = "1";
                 reqParams["onpage"] = "100";        // Кол-во записей на странице
                 //reqParams["findfolders"] = "(2)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
                 reqParams["findfolders"] = "("+ findfoldersParse + ")";   // Какой раздел отображаем (1-Вторичка, 2-Новостройка, 3-Нежмлое, 4-дома и котеджи, 5-участки, 6-гаражи)
                 reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
-                reqParams["findobject"] = "";       // Объект (не заполняется)
+                reqParams["findobject"] = "";                             // Объект (не заполняется)
 
                 string html = request.Post(pageParse, reqParams).ToString();
+
+                lock (lockerPageCount)
+                {
+                    GetNextPage();
+                }
+
                 ReadHtml(html);
-                //File.WriteAllText("VRX.txt", html);
+                File.WriteAllText("VRX.txt", html);
             }
 
             
@@ -145,12 +156,31 @@ namespace ParseVRX
         }
 
 
-        void Get
+        void GetObj()
+        {
+            HtmlNode pageNode = 
+        }
+
+
+        void GetRecord(string idRecord)
+        {
+            idRecord = pageRecordParse + idRecord;
+            HtmlDocument record = Download( idRecord );
+            GetObj(record);
+        }
 
 
         public void GetContent()
         {
+            //HtmlNode pageNodes = docPageParse.DocumentNode.SelectSingleNode("//tr[@class='vip']");
+            //Console.WriteLine(pageNodes.Id);
 
+            HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr[@class='vip']");
+            
+            foreach (var item in pageNodes)
+            {
+                GetRecord( (item.Id).Replace("td", "") );
+            }
         }
 
 
