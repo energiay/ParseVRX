@@ -30,8 +30,8 @@ namespace ParseVRX
         // Свойства с данными после парсинга
         string editDate;
         string operation;
-        string subject;
-        string location;
+        string subject;         // Объект
+        string location;        
         string address;
         string flats;
         string floor;
