@@ -28,9 +28,24 @@ namespace ParseVRX
         static object lockerPageCount = new object();
 
         // Свойства с данными после парсинга
-
-        
-
+        string editDate;
+        string operation;
+        string subject;
+        string location;
+        string address;
+        string flats;
+        string floor;
+        string material;
+        string area;
+        string type;
+        string price;
+        /*string water;
+        string gas;
+        string sewerage;
+        string bathroom;
+        string phone;
+        string electricity;
+        string heating;*/
         ////////////////////////////////////
 
 
@@ -84,24 +99,31 @@ namespace ParseVRX
                 var reqParams = new RequestParams();
                 
                 reqParams["viewtype"] = "1";
-                reqParams["onpage"] = "100";        // Кол-во записей на странице
+                reqParams["onpage"] = "100";          // Кол-во записей на странице
                 //reqParams["findfolders"] = "(2)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
                 reqParams["findfolders"] = "("+ findfoldersParse + ")";   // Какой раздел отображаем (1-Вторичка, 2-Новостройка, 3-Нежмлое, 4-дома и котеджи, 5-участки, 6-гаражи)
                 reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
                 reqParams["findobject"] = "";                             // Объект (не заполняется)
 
+                Console.WriteLine("Загрузка страницы " + pageParse);
                 string html = request.Post(pageParse, reqParams).ToString();
-
+                Console.WriteLine("Загрузка страницы окончена");
+                Console.WriteLine("");
+                
                 lock (lockerPageCount)
                 {
                     GetNextPage();
                 }
 
+                Console.WriteLine("Чтение страницы " + pageParse);
                 ReadHtml(html);
-                File.WriteAllText("VRX.txt", html);
+                Console.WriteLine("Чтение страницы окончена");
+                Console.WriteLine("");
+
+                //File.WriteAllText("VRX.txt", html);
             }
 
-            
+
 
         }
 
@@ -156,16 +178,139 @@ namespace ParseVRX
         }
 
 
-        void GetObj()
+        void GetObj(HtmlDocument record)
         {
-            HtmlNode pageNode = 
+            //HtmlNode bodyNode = record.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
+            HtmlNodeCollection pageNodes = record.DocumentNode.SelectNodes("//table[@class='text tbldetail']/tr/td");
+            int i = 0;
+            foreach (var item in pageNodes)
+            {
+                // Дата и время изменения об-ия
+                if (i==2)
+                {
+                    editDate = item.InnerText;
+                }
+
+                // Операция (продажа)
+                if (i==4)
+                {
+                    operation = item.InnerText;
+                }
+
+                // Объект (2х комнатная квартира)
+                if (i==8)
+                {
+                    subject = item.InnerText;
+                }
+
+                // Расположение
+                if (i==10)
+                {
+                    location = (item.InnerText).Replace("&raquo", "");
+                }
+
+                // Адрес
+                if (i==12)
+                {
+                    address = item.InnerText;
+                }
+
+                // Комнат
+                if(i==14)
+                {
+                    flats = item.InnerText;
+                }
+
+                // Этаж/этажей
+                if (i==16)
+                {
+                    floor = item.InnerText;
+                }
+
+                // Материал стен
+                if (i==18)
+                {
+                    material = item.InnerText;
+                }
+
+                // Площадь квартиры
+                if (i==20)
+                {
+                    area = item.InnerText;
+                }
+
+                // Тип квартиры
+                if (i==22)
+                {
+                    type = item.InnerText;
+                }
+
+                // Цена
+                if (i==24)
+                {
+                    price = item.InnerText;
+                }
+
+                /*
+
+                // Санузел
+                if (i==35)
+                {
+                    bathroom = item.InnerText;
+                }
+
+                // Наличие телефона
+                if (i==37)
+                {
+                    phone = item.InnerText;
+                }
+
+                // Электричество
+                if (i==41)
+                {
+                    electricity = item.InnerText;
+                }
+
+                // Отопление
+                if (i==43)
+                {
+                    heating = item.InnerText;
+                }
+
+                // Вода
+                if (i==45)
+                {
+                    water = item.InnerText;
+                }
+
+                // Газ
+                if (i==47)
+                {
+                    gas = item.InnerText;
+                }
+
+                // Канализация
+                if (i==49)
+                {
+                    sewerage = item.InnerText;
+                }
+
+                */
+
+                Console.WriteLine(i +" "+item.InnerText);
+                i++;
+            }
+
         }
 
 
         void GetRecord(string idRecord)
         {
-            idRecord = pageRecordParse + idRecord;
+            idRecord = pageRecordParse + idRecord + ".htm";
+            Console.WriteLine("Загрузка "+ idRecord);
             HtmlDocument record = Download( idRecord );
+            Console.WriteLine("Загрцзка " + idRecord + " окончена");
+            Console.WriteLine("");
             GetObj(record);
         }
 
