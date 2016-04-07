@@ -28,15 +28,17 @@ namespace ParseVRX
         static object lockerPageCount = new object();
 
         // Свойства с данными после парсинга
+        string subject;         // Объект
+        string location;        // Район
+        string place;           // Место
+        string address;         // Адрес (Улица,дом)
+        string area;            // Общая площадь
+
         string editDate;
         string operation;
-        string subject;         // Объект
-        string location;        
-        string address;
         string flats;
         string floor;
         string material;
-        string area;
         string type;
         string price;
         /*string water;
@@ -178,6 +180,41 @@ namespace ParseVRX
         }
 
 
+        // получаем нужный формат объекта
+        void GetSubject(string _subject)
+        {
+            if (_subject.IndexOf("комнатная")>-1 & _subject.IndexOf("квартира") > -1)
+            {
+                subject = (_subject.Replace("комнатная", "к.")).Replace("квартира", "кв.");
+            }
+            else
+            {
+                subject = _subject;
+            }
+        }
+
+
+        // получаем район и место нахождения об-та
+        void GetLocation (string _location)
+        {
+            _location = _location.Replace("&raquo", "");
+            _location = _location.Replace("р-н", "");
+
+            string[] split = _location.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            location = split[2].Trim();
+            place = split[3].Trim();
+        }
+
+
+        // Получаем общую площадь
+        void GetArea(string _area)
+        {
+            string[] split = _area.Split(new char[] { '/'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] split1 = split[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            area = (Convert.ToDecimal(split[0]) + Convert.ToDecimal(split[1]) + Convert.ToDecimal(split1[0])).ToString();
+        }
+
+
         void GetObj(HtmlDocument record)
         {
             //HtmlNode bodyNode = record.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
@@ -200,18 +237,19 @@ namespace ParseVRX
                 // Объект (2х комнатная квартира)
                 if (i==8)
                 {
-                    subject = item.InnerText;
+                    GetSubject(item.InnerText);
                 }
 
                 // Расположение
                 if (i==10)
                 {
-                    location = (item.InnerText).Replace("&raquo", "");
+                    GetLocation( item.InnerText );
                 }
 
                 // Адрес
                 if (i==12)
                 {
+                    
                     address = item.InnerText;
                 }
 
@@ -236,7 +274,7 @@ namespace ParseVRX
                 // Площадь квартиры
                 if (i==20)
                 {
-                    area = item.InnerText;
+                    GetArea(item.InnerText);
                 }
 
                 // Тип квартиры
