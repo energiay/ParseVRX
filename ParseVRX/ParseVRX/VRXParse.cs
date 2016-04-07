@@ -28,18 +28,20 @@ namespace ParseVRX
         static object lockerPageCount = new object();
 
         // Свойства с данными после парсинга
-        string subject;         // Объект
-        string location;        // Район
-        string place;           // Место
-        string address;         // Адрес (Улица,дом)
-        string area;            // Общая площадь
+        string subject="";          // Объект
+        string location = "";       // Район
+        string place = "";          // Место
+        string address = "";        // Адрес (Улица,дом)
+        string area = "";           // Общая площадь
+        string floor = "";          // Этаж
+        string floorHouse = "";     // Этажей в доме
+        string material;            // Материал
+        string type;                // Тип
+        string sector;              // Размер участка
 
         string editDate;
         string operation;
         string flats;
-        string floor;
-        string material;
-        string type;
         string price;
         /*string water;
         string gas;
@@ -201,8 +203,14 @@ namespace ParseVRX
             _location = _location.Replace("р-н", "");
 
             string[] split = _location.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            location = split[2].Trim();
-            place = split[3].Trim();
+            if (split.Length > 2)
+            {
+                location = split[2].Trim();
+            }
+            if (split.Length > 3)
+            {
+                place = split[3].Trim();
+            }
         }
 
 
@@ -215,12 +223,110 @@ namespace ParseVRX
         }
 
 
+        // Получаем этажность дома и этаж квартиры
+        void GetFloor(string _floor)
+        {
+            string[] split = _floor.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            floor = split[0];
+            floorHouse = split[1];
+        }
+
+
+        // Получаем материал дома
+        void GetMaterial(string _material)
+        {
+            material = _material;
+        }
+
+        // Получаем тип квартик
+        void GetType(string _type)
+        {
+            type = _type;
+        }
+
+        // Получаем адрес
+        void GetAddress(string _address)
+        {
+            address = _address;
+        }
+
+        void GetSector(string _sector)
+        {
+            string[] split = _sector.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            sector = split[0];
+        }
+
+        void GetPrise(string _prise)
+        {
+            string[] split = _prise.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < split.Length-1; i++)
+            {
+                price += split[i];
+            }
+        }
+
+
         void GetObj(HtmlDocument record)
         {
             //HtmlNode bodyNode = record.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
             HtmlNodeCollection pageNodes = record.DocumentNode.SelectNodes("//table[@class='text tbldetail']/tr/td");
+
+            for (int j = 0; j < pageNodes.Count; j++)
+            {
+                //Console.WriteLine(j + ") " + pageNodes[j].InnerText);
+
+                if ( (pageNodes[j].InnerText).IndexOf("Объект:") > 0 )
+                {
+                    GetSubject(pageNodes[j+1].InnerText);
+                }
+
+                // Расположение
+                if ((pageNodes[j].InnerText).IndexOf("Месторасположение:") > 0)
+                {
+                    GetLocation(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Адрес:") > 0)
+                {
+                    GetAddress(pageNodes[j + 1].InnerText);
+                }
+
+                // площадь
+                if ((pageNodes[j].InnerText).IndexOf("Площадь:") > 0)
+                {
+                    GetArea(pageNodes[j + 1].InnerText);
+                }
+
+                // Этажность
+                if ((pageNodes[j].InnerText).IndexOf("Этаж/этажей:") > 0)
+                {
+                    GetFloor(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Материал:") > 0)
+                {
+                    GetMaterial(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Тип:") > 0)
+                {
+                    GetType(pageNodes[j + 1].InnerText);
+                }
+            
+                if ((pageNodes[j].InnerText).IndexOf("Участок:") > 0)
+                {
+                    GetSector(pageNodes[j + 1].InnerText);
+                }
+            
+                if ((pageNodes[j].InnerText).IndexOf("Стоимость:") > 0)
+                {
+                    GetPrise(pageNodes[j + 1].InnerText);
+                }
+            }
+
+
             int i = 0;
-            foreach (var item in pageNodes)
+            /*foreach (var item in pageNodes)
             {
                 // Дата и время изменения об-ия
                 if (i==2)
@@ -262,13 +368,15 @@ namespace ParseVRX
                 // Этаж/этажей
                 if (i==16)
                 {
-                    floor = item.InnerText;
+                    GetFloor(item.InnerText);
+                    //floor = item.InnerText;
                 }
 
                 // Материал стен
                 if (i==18)
                 {
-                    material = item.InnerText;
+                    GetMaterial(item.InnerText);
+                    //material = item.InnerText;
                 }
 
                 // Площадь квартиры
@@ -280,7 +388,8 @@ namespace ParseVRX
                 // Тип квартиры
                 if (i==22)
                 {
-                    type = item.InnerText;
+                    GetType(item.InnerText);
+                    //type = item.InnerText;
                 }
 
                 // Цена
@@ -289,7 +398,7 @@ namespace ParseVRX
                     price = item.InnerText;
                 }
 
-                /*
+                
 
                 // Санузел
                 if (i==35)
@@ -333,11 +442,11 @@ namespace ParseVRX
                     sewerage = item.InnerText;
                 }
 
-                */
+                
 
                 Console.WriteLine(i +" "+item.InnerText);
                 i++;
-            }
+            }*/
 
         }
 
