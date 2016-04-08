@@ -35,20 +35,30 @@ namespace ParseVRX
         string area = "";           // Общая площадь
         string floor = "";          // Этаж
         string floorHouse = "";     // Этажей в доме
-        string material;            // Материал
-        string type;                // Тип
-        string sector;              // Размер участка
+        string material="";         // Материал
+        string type="";             // Тип
+        string sector="";           // Размер участка
+        string price;               // Цена
+        string editDate;            // Дата изменения об-ия
 
-        string editDate;
-        string operation;
-        string flats;
-        string price;
+        string operation="";        // Продажа
+        string flats="";            // Кол-во комнат
+        string balcony="";          // Балкон
+        string phone="";            // Наличие телефота
+        string bathroom="";         // Санузел
+        string basement="";         // Подвал
+        string electricit="";       // Электричество
+        string comment = "";        // Комментарий к заявке
+
+        string firm = "";           // Фирма продавец
+        string fioAgent = "";       // ФИО агента
+        string phoneAgent = "";     // телефон агента
+        string mailAgent = "";      // email агента
+        
+
         /*string water;
         string gas;
         string sewerage;
-        string bathroom;
-        string phone;
-        string electricity;
         string heating;*/
         ////////////////////////////////////
 
@@ -86,6 +96,9 @@ namespace ParseVRX
                string html = response.ToString();
                 HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
                 doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
+
+                File.WriteAllText("VRX_other.txt", html);
+
                 return doc;
             }
 
@@ -124,7 +137,7 @@ namespace ParseVRX
                 Console.WriteLine("Чтение страницы окончена");
                 Console.WriteLine("");
 
-                //File.WriteAllText("VRX.txt", html);
+                File.WriteAllText("VRX.txt", html);
             }
 
 
@@ -217,9 +230,22 @@ namespace ParseVRX
         // Получаем общую площадь
         void GetArea(string _area)
         {
+            Decimal sum=0;
             string[] split = _area.Split(new char[] { '/'}, StringSplitOptions.RemoveEmptyEntries);
             string[] split1 = split[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            area = (Convert.ToDecimal(split[0]) + Convert.ToDecimal(split[1]) + Convert.ToDecimal(split1[0])).ToString();
+            for (int i = 0; i < 2; i++)
+            {
+                if (split[i]!="-")
+                {
+                    sum += Convert.ToDecimal(split[i]);
+                }
+
+            }
+            if (split1[0] != "-")
+            {
+                sum += Convert.ToDecimal(split1[0]);
+            }
+            area = sum.ToString();
         }
 
 
@@ -265,6 +291,45 @@ namespace ParseVRX
             }
         }
 
+        void GetEditDate(string _editDate)
+        {
+            editDate = _editDate.Substring(0, _editDate.Length-3);
+        }
+
+        void GetOperation (string _operation)
+        {
+            operation = _operation;
+        }
+
+        void GetFlats(string _flats)
+        {
+            flats = _flats;
+        }
+
+        void GetBalcony(string _balcony)
+        {
+            balcony = _balcony;
+        }
+
+        void GetComment(string _comment)
+        {
+            comment = _comment.Replace("&quot;", "'");
+        }
+
+
+        void GetFirm(string _firm)
+        {
+            string[] split = _firm.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            if (split[1][0]=='(')
+            {
+                firm = split[0] + " " + split[1];
+            }
+            else
+            {
+                firm = split[0];
+            }
+        }
+
 
         void GetObj(HtmlDocument record)
         {
@@ -273,180 +338,181 @@ namespace ParseVRX
 
             for (int j = 0; j < pageNodes.Count; j++)
             {
-                //Console.WriteLine(j + ") " + pageNodes[j].InnerText);
+                Console.WriteLine(j + ") " + pageNodes[j].InnerText);
 
-                if ( (pageNodes[j].InnerText).IndexOf("Объект:") > 0 )
+                if ( (pageNodes[j].InnerText).IndexOf("Объект:") > -1 )
                 {
                     GetSubject(pageNodes[j+1].InnerText);
                 }
 
                 // Расположение
-                if ((pageNodes[j].InnerText).IndexOf("Месторасположение:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Месторасположение:") > -1)
                 {
                     GetLocation(pageNodes[j + 1].InnerText);
                 }
 
-                if ((pageNodes[j].InnerText).IndexOf("Адрес:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Адрес:") > -1)
                 {
                     GetAddress(pageNodes[j + 1].InnerText);
                 }
 
                 // площадь
-                if ((pageNodes[j].InnerText).IndexOf("Площадь:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Площадь:") > -1)
                 {
                     GetArea(pageNodes[j + 1].InnerText);
                 }
 
+
                 // Этажность
-                if ((pageNodes[j].InnerText).IndexOf("Этаж/этажей:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Этаж/этажей:") > -1)
                 {
                     GetFloor(pageNodes[j + 1].InnerText);
                 }
 
-                if ((pageNodes[j].InnerText).IndexOf("Материал:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Материал:") > -1)
                 {
                     GetMaterial(pageNodes[j + 1].InnerText);
                 }
 
-                if ((pageNodes[j].InnerText).IndexOf("Тип:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Тип:") > -1)
                 {
                     GetType(pageNodes[j + 1].InnerText);
                 }
             
-                if ((pageNodes[j].InnerText).IndexOf("Участок:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Участок:") > -1)
                 {
                     GetSector(pageNodes[j + 1].InnerText);
                 }
             
-                if ((pageNodes[j].InnerText).IndexOf("Стоимость:") > 0)
+                if ((pageNodes[j].InnerText).IndexOf("Стоимость:") > -1)
                 {
                     GetPrise(pageNodes[j + 1].InnerText);
                 }
+
+                if ((pageNodes[j].InnerText).IndexOf("Изменено:") > -1)
+                {
+                    GetEditDate(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Операция:") > -1)
+                {
+                    GetOperation(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Комнат:") > -1)
+                {
+                    GetFlats(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Балкон:") > -1)
+                {
+                    GetBalcony(pageNodes[j + 1].InnerText);
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Санузел:") > -1)
+                {
+                    bathroom = pageNodes[j + 1].InnerText;
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Наличие телефона:") > -1)
+                {
+                    phone = pageNodes[j + 1].InnerText;
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Подвал:") > -1)
+                {
+                    basement = pageNodes[j + 1].InnerText;
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Электричество:") > -1)
+                {
+                    electricit = pageNodes[j + 1].InnerText;
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Комментарий к заявке:") > -1)
+                {
+                    GetComment( pageNodes[j + 1].InnerText );
+                }
+
+                if ((pageNodes[j].InnerText).IndexOf("Фирма продавец:") > -1)
+                {
+                    GetFirm(pageNodes[j + 1].InnerText);
+                }
+
+                
+
             }
 
 
             int i = 0;
-            /*foreach (var item in pageNodes)
+        }
+
+
+
+
+        void GetSeller(HtmlDocument record)
+        {
+            HtmlNodeCollection pageNodes = record.DocumentNode.SelectNodes("//table[@class='text tbldetail']/tr/td/table[@class='text']/tr/td");
+            if (pageNodes != null)
             {
-                // Дата и время изменения об-ия
-                if (i==2)
+                for (int j = 0; j < pageNodes.Count-1; j++)
                 {
-                    editDate = item.InnerText;
-                }
+                    Console.WriteLine(j + ")) " + pageNodes[j].InnerText);
 
-                // Операция (продажа)
-                if (i==4)
+                    if ((pageNodes[j].InnerText).IndexOf("Агент:") > -1)
+                    {
+                        fioAgent = pageNodes[j + 1].InnerText;
+                    }
+
+                    if ((pageNodes[j].InnerText).IndexOf("Телефон агента:") > -1)
+                    {
+                        phoneAgent = pageNodes[j + 1].InnerText;
+                    }
+
+                    if ((pageNodes[j].InnerText).IndexOf("e-mail:") > -1)
+                    {
+                        mailAgent = pageNodes[j + 1].InnerText;
+                    }
+                }
+            }
+            else
+            {
+                HtmlNodeCollection pageNodesOther = record.DocumentNode.SelectNodes("//table[@class='text tbldetail']/tr/td");
+
+                var bmailAgent = true; // проверка на первое вхождение
+
+                for (int j = 0; j < pageNodesOther.Count; j++)
                 {
-                    operation = item.InnerText;
+                    if ((pageNodesOther[j].InnerText).IndexOf("Агент:") > -1)
+                    {
+                        fioAgent = pageNodesOther[j + 1].InnerText;
+                    }
+
+                    if ((pageNodesOther[j].InnerText).IndexOf("Телефон агента:") > -1)
+                    {
+                        phoneAgent = pageNodesOther[j + 1].InnerText;
+                    }
+
+                    if ((pageNodesOther[j].InnerText).IndexOf("e-mail:") > -1)
+                    {
+                        // если попал, то в цикле больше не попадешь )
+                        if (bmailAgent)
+                        {
+                            mailAgent = pageNodesOther[j + 1].InnerText;
+                            bmailAgent = false;
+                        }
+                    }
                 }
+            }
 
-                // Объект (2х комнатная квартира)
-                if (i==8)
-                {
-                    GetSubject(item.InnerText);
-                }
+        }
 
-                // Расположение
-                if (i==10)
-                {
-                    GetLocation( item.InnerText );
-                }
 
-                // Адрес
-                if (i==12)
-                {
-                    
-                    address = item.InnerText;
-                }
+        void SaveRecord()
+        {
+            string record = subject + ";" + location + ";" + place + ";" + area + ";" + floor + ";" + floorHouse + ";" + material + ";" + type + ";" + sector + ";" + firm + "" + phoneAgent + "" + fioAgent + "" + mailAgent + ";" + price + ";" + editDate + ";" + comment + ";" + ""/*тут должны быть координаты*/ + ";" + operation + " " + subject + ";" + ""/*optional*/ + ";" + ""/*Rayon*/ + ";" + ""/*тут пошел список картинок*/+"\n";
 
-                // Комнат
-                if(i==14)
-                {
-                    flats = item.InnerText;
-                }
-
-                // Этаж/этажей
-                if (i==16)
-                {
-                    GetFloor(item.InnerText);
-                    //floor = item.InnerText;
-                }
-
-                // Материал стен
-                if (i==18)
-                {
-                    GetMaterial(item.InnerText);
-                    //material = item.InnerText;
-                }
-
-                // Площадь квартиры
-                if (i==20)
-                {
-                    GetArea(item.InnerText);
-                }
-
-                // Тип квартиры
-                if (i==22)
-                {
-                    GetType(item.InnerText);
-                    //type = item.InnerText;
-                }
-
-                // Цена
-                if (i==24)
-                {
-                    price = item.InnerText;
-                }
-
-                
-
-                // Санузел
-                if (i==35)
-                {
-                    bathroom = item.InnerText;
-                }
-
-                // Наличие телефона
-                if (i==37)
-                {
-                    phone = item.InnerText;
-                }
-
-                // Электричество
-                if (i==41)
-                {
-                    electricity = item.InnerText;
-                }
-
-                // Отопление
-                if (i==43)
-                {
-                    heating = item.InnerText;
-                }
-
-                // Вода
-                if (i==45)
-                {
-                    water = item.InnerText;
-                }
-
-                // Газ
-                if (i==47)
-                {
-                    gas = item.InnerText;
-                }
-
-                // Канализация
-                if (i==49)
-                {
-                    sewerage = item.InnerText;
-                }
-
-                
-
-                Console.WriteLine(i +" "+item.InnerText);
-                i++;
-            }*/
+            File.AppendAllText("vrx_all.csv", VRXParse.Utf8ToWin1251(record), Encoding.GetEncoding("windows-1251"));
 
         }
 
@@ -459,6 +525,8 @@ namespace ParseVRX
             Console.WriteLine("Загрцзка " + idRecord + " окончена");
             Console.WriteLine("");
             GetObj(record);
+            GetSeller(record);
+            SaveRecord();
         }
 
 

@@ -41,7 +41,7 @@ namespace ParseVRX
 
             // Потготовка CSV файла для записи
             File.WriteAllText("vrx_all.csv", VRXParse.Utf8ToWin1251("sep=;\n"), Encoding.GetEncoding("windows-1251"));
-            string head = "Объект;Район;Место;Адрес;Площадь(общ);Этаж;Этажей" + "\n";
+            string head = "Объект;Район;Место;Адрес;Площадь(Общ);Этаж;Этажей;Материал;Тип;Участок(соток);Цена;Контакты;Дата;Текст;Координаты;Заголовок;Optional;Rayon;image1;image2;image3;image4;image5;image6;image7;image8;image9;image10" + "\n";
             File.AppendAllText("vrx_all.csv", VRXParse.Utf8ToWin1251(head), Encoding.GetEncoding("windows-1251"));
 
             for (int i = 0; i < threadCount; i++)
