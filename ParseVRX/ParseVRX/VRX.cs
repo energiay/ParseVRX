@@ -20,7 +20,7 @@ namespace ParseVRX
 
         public VRX (string web, string findfolders, int page)
         {
-            threadCount = 2;
+            threadCount = 20;
             pageParse = web;
             findfoldersParse = findfolders;
             //Thread thWatch = new Thread();
@@ -78,7 +78,7 @@ namespace ParseVRX
                     //ConsoleWriteLineClear("Ждите, идет чтение "+ VRXParse.countPageParse.ToString() + " стр.", left, top);
                     //ConsoleWriteLineClear("Прочитано: " + VRXParsePage.count + " объяв. на стр. " + VRXParse.countPageParse.ToString(), VRX.left, VRX.top);
 
-                    ConsoleWriteLineClear("Идет читение "  + VRXParse.countPageParse.ToString() + " страницы...");
+                    ConsoleWriteLineClear("Идет чтение "  + VRXParse.countPageParse.ToString() + " страницы...");
 
                     Thread.Sleep(100);
                 }
@@ -103,6 +103,7 @@ namespace ParseVRX
         public void ConsoleWriteLineClear(string str)
         {
             top++;
+
             Console.SetCursorPosition(0, top);
             Console.Write("                                                         ");
 

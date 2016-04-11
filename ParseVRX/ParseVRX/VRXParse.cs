@@ -89,15 +89,19 @@ namespace ParseVRX
                 */
 
                 ReadHtml(html);
-               
+
                 /*
                 Console.WriteLine("Чтение страницы " + pageParse);
                 ReadHtml(html);
                 Console.WriteLine("Чтение страницы окончена");
                 Console.WriteLine("");
                 */
-
-                //File.WriteAllText("VRX.txt", html);
+                /*
+                lock (lockerSave)
+                {
+                    File.WriteAllText("VRX.txt", html);
+                }
+                */
             }
 
 
@@ -200,7 +204,7 @@ namespace ParseVRX
                     {
                         if (item1.Name == "style")
                         {
-                            if (item1.Value == "font-weight: bold;")
+                            if (item1.Value == "cursor:pointer;")
                             {
                                 VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
                                 SaveRecord(record.saveRecord);

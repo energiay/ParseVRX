@@ -256,9 +256,16 @@ namespace ParseVRX
                 }
 
                 // площадь
-                if ((pageNodes[j].InnerText).IndexOf("Площадь:") > -1)
+                if ((pageNodes[j].InnerText).IndexOf("Площадь:") == 0)
                 {
-                    GetArea(pageNodes[j + 1].InnerText);
+                    if ( (pageNodes[j + 1].InnerText).IndexOf("/") > -1 )
+                    {
+                        GetArea(pageNodes[j + 1].InnerText);
+                    }
+                    else
+                    {
+                        //GetArea(pageNodes[j + 1].InnerText);
+                    }
                 }
 
 
