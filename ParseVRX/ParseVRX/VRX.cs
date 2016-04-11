@@ -10,18 +10,19 @@ namespace ParseVRX
 {
     class VRX
     {
+        int top=4;
+        int left=0;
+
         string pageParse;
         int threadCount;
         string findfoldersParse;
-        int countPageParse;
         List<Thread> thList = new List<Thread>();
 
         public VRX (string web, string findfolders, int page)
         {
-            threadCount = 1;
+            threadCount = 2;
             pageParse = web;
             findfoldersParse = findfolders;
-            countPageParse = page;
             //Thread thWatch = new Thread();
             VRXParse vrx = new VRXParse( pageParse, findfolders, page );
             ThreadVRX();
@@ -47,32 +48,69 @@ namespace ParseVRX
 
             for (int i = 0; i < threadCount; i++)
             {
+                VRXParse.GetNextPage();
                 thList.Add( new Thread( new ParameterizedThreadStart(Run)) );
                 thList[thList.Count - 1].Name = "Thread#" + i;
-                thList[thList.Count - 1].Start( new VRXParse(findfoldersParse, countPageParse) );
-                VRXParse.GetNextPage();
+                thList[thList.Count - 1].Start( new VRXParse(findfoldersParse) );
             }
 
+            ConsoleWriteLine("Всего страниц: "+ VRXParse.countPageAll);
 
-            /*while (countPageParse <= VRXParse.countPageAll)
+
+            while (VRXParse.countPageParse <= VRXParse.countPageAll)
             {
                 for (int i = 0; i < threadCount; i++)
                 {
-                    
-                    
-                    if (thList[0])
-                    {
 
+
+                     if (thList[i].ThreadState.ToString() == "Stopped")
+                     {
+                        VRXParse.GetNextPage();
+                        thList[i] = new Thread(new ParameterizedThreadStart(Run));
+                        thList[i].Name = "Thread#" + i;
+                        thList[i].Start(new VRXParse(findfoldersParse));
                     }
-                    
-                    
+
+                    //Console.WriteLine(thList[i].ThreadState.ToString());
+
+                    /*ConsoleWriteLineClear(thList[i].ThreadState.ToString(), left, top);
+                    Thread.Sleep(1000);*/
+                    //ConsoleWriteLineClear("Ждите, идет чтение "+ VRXParse.countPageParse.ToString() + " стр.", left, top);
+                    //ConsoleWriteLineClear("Прочитано: " + VRXParsePage.count + " объяв. на стр. " + VRXParse.countPageParse.ToString(), VRX.left, VRX.top);
+
+                    ConsoleWriteLineClear("Идет читение "  + VRXParse.countPageParse.ToString() + " страницы...");
+
+                    Thread.Sleep(100);
                 }
-            }*/
+            }
+
 
 
         }
 
 
+
+        
+        public void ConsoleWriteLine (string str)
+        {
+            Console.SetCursorPosition(left, top);
+            Console.SetCursorPosition(left, top);
+            Console.Write(str);
+
+            top++;
+        }
+
+        public void ConsoleWriteLineClear(string str)
+        {
+            top++;
+            Console.SetCursorPosition(0, top);
+            Console.Write("                                                         ");
+
+            Console.SetCursorPosition(left, top);
+            Console.Write(str);
+
+            top--;
+        }
 
         static public string Utf8ToWin1251(string str)
         {

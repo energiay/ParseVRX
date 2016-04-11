@@ -14,8 +14,8 @@ namespace ParseVRX
         public static string pageParse; // Cтрока url
         
         //public static int countPage = 0; // номер страцицы
-        static int countPageParse;
-        public static int countPageAll;  // общее кол-во страниц
+        public static int countPageParse; // номер страцицы
+        public static int countPageAll;   // общее кол-во страниц
 
         string findfoldersParse;
         //string prePage = "&page="; // префикс для страниц
@@ -42,14 +42,23 @@ namespace ParseVRX
             // Загружаю HTML и передаю ее в класс HtmlDocument
             Download();
             countPageAll = GetPageParse( docPageParse );
-            Console.WriteLine( countPageAll );
+            
+            //Console.WriteLine( countPageAll );
+            countPageParse = 0; // 
         }
 
 
-        public VRXParse(string findfolders, int _countPageParse)
+        public VRXParse(string findfolders)
         {
             findfoldersParse = findfolders;
-            countPageParse = _countPageParse;
+        }
+
+
+        public void Run()
+        {
+            Download();
+            GetContentVip();
+            GetContent();
         }
 
 
@@ -70,17 +79,25 @@ namespace ParseVRX
                 reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
                 reqParams["findobject"] = "";                             // Объект (не заполняется)
 
+                string html = request.Post(pageParse, reqParams).ToString();
+
+                /*
                 Console.WriteLine("Загрузка страницы " + pageParse);
                 string html = request.Post(pageParse, reqParams).ToString();
                 Console.WriteLine("Загрузка страницы окончена");
                 Console.WriteLine("");
+                */
 
+                ReadHtml(html);
+               
+                /*
                 Console.WriteLine("Чтение страницы " + pageParse);
                 ReadHtml(html);
                 Console.WriteLine("Чтение страницы окончена");
                 Console.WriteLine("");
+                */
 
-                File.WriteAllText("VRX.txt", html);
+                //File.WriteAllText("VRX.txt", html);
             }
 
 
@@ -133,6 +150,9 @@ namespace ParseVRX
         {
             lock (lockerPage)
             {
+                //string str = "Страниц прочитано: " + countPageParse + " из " + countPageAll;
+                //VRX.ConsoleWriteLine(str, VRX.left, VRX.top);
+                //Console.WriteLine("Страниц прочитано: " + countPageParse +" из "+ countPageAll);
                 countPageParse++;
             }
         }
@@ -156,11 +176,13 @@ namespace ParseVRX
             //Console.WriteLine(pageNodes.Id);
 
             HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr[@class='vip']");
-            
-            foreach (var item in pageNodes)
+            if (pageNodes != null)
             {
-                VRXParsePage record = new VRXParsePage( (item.Id).Replace("td", "") );
-                SaveRecord(record.saveRecord);
+                foreach (var item in pageNodes)
+                {
+                    VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
+                    SaveRecord(record.saveRecord);
+                }
             }
         }
 
@@ -169,17 +191,20 @@ namespace ParseVRX
         {
            HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr");
 
-            foreach (var item in pageNodes)
+            if (pageNodes != null)
             {
-                HtmlAttributeCollection str = item.Attributes;
-                foreach (var item1 in str)
+                foreach (var item in pageNodes)
                 {
-                    if (item1.Name == "style")
+                    HtmlAttributeCollection str = item.Attributes;
+                    foreach (var item1 in str)
                     {
-                        if(item1.Value == "font-weight: bold;")
+                        if (item1.Name == "style")
                         {
-                            VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
-                            SaveRecord(record.saveRecord);
+                            if (item1.Value == "font-weight: bold;")
+                            {
+                                VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
+                                SaveRecord(record.saveRecord);
+                            }
                         }
                     }
                 }

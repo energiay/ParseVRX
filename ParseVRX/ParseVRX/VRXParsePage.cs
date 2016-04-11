@@ -12,6 +12,7 @@ namespace ParseVRX
     class VRXParsePage
     {
         public static string pageRecordParse = "http://www.vrx.ru/data/"; // Cтрока url для записи
+        public static int count=0;
         public string saveRecord = "";
 
         // Свойства с данными после парсинга
@@ -62,6 +63,8 @@ namespace ParseVRX
             GetObj(record);
             GetSeller(record);
             SaveRecord();
+            count++;
+            //VRX.ConsoleWriteLineClear("Прочитано: " + count + " объяв. на стр. " + VRXParse.countPageParse, VRX.left, VRX.top);
         }
 
 
@@ -70,16 +73,20 @@ namespace ParseVRX
 
             using (var request = new HttpRequest())
             {
+                /*
                 Console.WriteLine("Загрузка страницы " + url);
                 HttpResponse response = request.Get(url);
                 Console.WriteLine("Загрузка страницы окончена");
                 Console.WriteLine("");
+                */
+
+                HttpResponse response = request.Get(url);
 
                 string html = response.ToString();
                 HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
                 doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
 
-                File.WriteAllText("VRX_other.txt", html);
+                //File.WriteAllText("VRX_other.txt", html);
 
                 return doc;
             }
@@ -230,7 +237,7 @@ namespace ParseVRX
 
             for (int j = 0; j < pageNodes.Count; j++)
             {
-                Console.WriteLine(j + ") " + pageNodes[j].InnerText);
+                //Console.WriteLine(j + ") " + pageNodes[j].InnerText);
 
                 if ((pageNodes[j].InnerText).IndexOf("Объект:") > -1)
                 {
@@ -350,7 +357,7 @@ namespace ParseVRX
             {
                 for (int j = 0; j < pageNodes.Count - 1; j++)
                 {
-                    Console.WriteLine(j + ")) " + pageNodes[j].InnerText);
+                    //Console.WriteLine(j + ")) " + pageNodes[j].InnerText);
 
                     if ((pageNodes[j].InnerText).IndexOf("Агент:") > -1)
                     {

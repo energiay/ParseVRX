@@ -15,7 +15,16 @@ namespace ParseVRX
             Console.WriteLine("---");
             Console.Write("Выберите нужный вариант: ");
 
+            /*
+            VRX.ConsoleWriteLine("1. Что бы парсить www.ksota.ru вбейте: '1' и нажмите Enter", VRX.left, VRX.top);
+            VRX.ConsoleWriteLine("2. Что бы парсить www.vrx.ru вбейте: '2' и нажмите Enter", VRX.left, VRX.top);
+            VRX.ConsoleWriteLine("---", VRX.left, VRX.top);
+            VRX.ConsoleWriteLine("Выберите нужный вариант: ", VRX.left, VRX.top);
+            */
+
             string parseWeb = Console.ReadLine();
+
+
             if (parseWeb == "1")
             {
                 /*
@@ -36,6 +45,7 @@ namespace ParseVRX
             {
                 Console.WriteLine("Вы не выбрали ни чего из выше перечисленного. Программа завершает работу.");
             }
+            Console.WriteLine("EXIT");
 
             Console.ReadLine();
         }
