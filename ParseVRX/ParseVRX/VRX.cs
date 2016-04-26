@@ -45,7 +45,8 @@ namespace ParseVRX
             //File.WriteAllText("vrx_all.csv", VRXParse.Utf8ToWin1251("sep=;\n"), Encoding.GetEncoding("windows-1251"));
             string head = "Объект;Район;Место;Адрес;Площадь(Общ);Этаж;Этажей;Материал;Тип;Участок(соток);Цена;Контакты;Дата;Текст;Координаты;Заголовок;Optional;Rayon;image1;image2;image3;image4;image5;image6;image7;image8;image9;image10" + "\n";
             File.WriteAllText("vrx_all.csv", Utf8ToWin1251(head), Encoding.GetEncoding("windows-1251"));
-
+            File.WriteAllText("vrx_error.txt", Utf8ToWin1251("Ошибки:"), Encoding.GetEncoding("windows-1251"));
+            
             for (int i = 0; i < threadCount; i++)
             {
                 VRXParse.GetNextPage();
@@ -78,13 +79,39 @@ namespace ParseVRX
                     //ConsoleWriteLineClear("Ждите, идет чтение "+ VRXParse.countPageParse.ToString() + " стр.", left, top);
                     //ConsoleWriteLineClear("Прочитано: " + VRXParsePage.count + " объяв. на стр. " + VRXParse.countPageParse.ToString(), VRX.left, VRX.top);
 
-                    ConsoleWriteLineClear("Идет чтение "  + VRXParse.countPageParse.ToString() + " страницы...");
+                    if (VRXParse.countPageParse <= VRXParse.countPageAll)
+                    {
+                        ConsoleWriteLineClear("Идет чтение " + VRXParse.countPageParse.ToString() + " страницы...");
+                    }
 
                     Thread.Sleep(100);
                 }
             }
 
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("Ждем завершения " + threadCount + " потоков:");
 
+            bool raning = true;
+            while (raning)
+            {
+                raning = false;
+                for (int i = 0; i < threadCount; i++)
+                {
+                    if ( thList[i] != null )
+                    {
+                        if ((thList[i].ThreadState.ToString() == "Stopped") )
+                        {
+                            Console.WriteLine("Thread#" + i + " завершил свою работу.");
+                            thList[i] = null;
+                        }
+                    }
+                    if (thList[i] != null)
+                    {
+                        raning = true;
+                    }
+                }
+            }
 
         }
 

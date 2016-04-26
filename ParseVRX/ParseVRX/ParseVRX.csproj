@@ -46,7 +46,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="xNet">
-      <HintPath>..\..\..\xNet.dll</HintPath>
+      <HintPath>..\..\..\..\Users\tl\Downloads\xNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

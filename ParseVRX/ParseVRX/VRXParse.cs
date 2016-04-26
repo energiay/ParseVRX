@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using xNet;
 using HtmlAgilityPack;
 using System.IO;
+using System.Threading;
 
 namespace ParseVRX
 {
@@ -23,10 +24,13 @@ namespace ParseVRX
         //string html; // HTML Страницы
         HtmlDocument docPageParse; // Загруженный html листа в класс HtmlDocument
 
+        string html = "";
+
         static object lockerPage = new object();
         static object lockerSave = new object();
-
+        static object lockerSaveError = new object();
         
+
 
 
         /// <summary>
@@ -41,6 +45,24 @@ namespace ParseVRX
 
             // Загружаю HTML и передаю ее в класс HtmlDocument
             Download();
+
+            if (html == "error")
+            {
+                int i = 0; // кол-во попыток для запроса html
+                while (html == "error" || i < 10)
+                {
+                    Download();
+                    i++;
+                }
+
+                if (html == "error")
+                {
+                    Thread t = Thread.CurrentThread;
+                    t.Abort();
+                    SaveError("Не удалось открыть страницу " + pageParse);
+                }
+            }
+
             countPageAll = GetPageParse( docPageParse );
             
             //Console.WriteLine( countPageAll );
@@ -57,6 +79,24 @@ namespace ParseVRX
         public void Run()
         {
             Download();
+
+            if (html == "error")
+            {
+                int i = 0; // кол-во попыток для запроса html
+                while (html == "error" || i < 10)
+                {
+                    Download();
+                    i++;
+                }
+
+                if (html == "error")
+                {
+                    Thread t = Thread.CurrentThread;
+                    t.Abort();
+                    SaveError("Не удалось открыть страницу " + pageParse);
+                }
+            }
+
             GetContentVip();
             GetContent();
         }
@@ -79,7 +119,17 @@ namespace ParseVRX
                 reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
                 reqParams["findobject"] = "";                             // Объект (не заполняется)
 
-                string html = request.Post(pageParse, reqParams).ToString();
+                
+
+                try
+                {
+                    html = request.Post(pageParse, reqParams).ToString();
+                    ReadHtml(html);
+                }
+                catch
+                {
+                    html = "error";
+                }
 
                 /*
                 Console.WriteLine("Загрузка страницы " + pageParse);
@@ -88,7 +138,7 @@ namespace ParseVRX
                 Console.WriteLine("");
                 */
 
-                ReadHtml(html);
+                
 
                 /*
                 Console.WriteLine("Чтение страницы " + pageParse);
@@ -173,44 +223,68 @@ namespace ParseVRX
             }
         }
 
+        /// <summary>
+        /// Сохраняем ошибки
+        /// </summary>
+        static public void SaveError(string saveRecord)
+        {
+            lock (lockerSaveError)
+            {
+                File.AppendAllText("vrx_error.txt", VRX.Utf8ToWin1251(saveRecord), Encoding.GetEncoding("windows-1251"));
+            }
+        }
+
 
         public void GetContentVip()
         {
             //HtmlNode pageNodes = docPageParse.DocumentNode.SelectSingleNode("//tr[@class='vip']");
             //Console.WriteLine(pageNodes.Id);
-
-            HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr[@class='vip']");
-            if (pageNodes != null)
+            if (docPageParse != null)
             {
-                foreach (var item in pageNodes)
+                HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr[@class='vip']");
+                if (pageNodes != null)
                 {
-                    VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
-                    SaveRecord(record.saveRecord);
+                    foreach (var item in pageNodes)
+                    {
+                        VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
+                        SaveRecord(record.saveRecord);
+                    }
                 }
+            }
+            else
+            {
+                SaveError("Content is not null (VIP) " + pageParse );
             }
         }
 
 
         public void GetContent()
         {
-           HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr");
-
-            if (pageNodes != null)
+            if (docPageParse != null)
             {
-                foreach (var item in pageNodes)
+                HtmlNodeCollection pageNodes = docPageParse.DocumentNode.SelectNodes("//tr");
+
+                if (pageNodes != null)
                 {
-                    HtmlAttributeCollection str = item.Attributes;
-                    foreach (var item1 in str)
+                    foreach (var item in pageNodes)
                     {
-                        if (item1.Name == "style")
+                        HtmlAttributeCollection str = item.Attributes;
+                        foreach (var item1 in str)
                         {
-                            if (item1.Value == "cursor:pointer;")
+                            if (item1.Name == "style")
                             {
-                                VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
-                                SaveRecord(record.saveRecord);
+                                if (item1.Value == "cursor:pointer;")
+                                {
+                                    VRXParsePage record = new VRXParsePage((item.Id).Replace("td", ""));
+                                    SaveRecord(record.saveRecord);
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    SaveError("Content is not null (NOT VIP) " + pageParse );
                 }
             }
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using xNet;
 using HtmlAgilityPack;
 using System.IO;
+using System.Threading;
 
 namespace ParseVRX
 {
@@ -57,6 +58,24 @@ namespace ParseVRX
 
             //Console.WriteLine("Загрузка " + idRecord);
             HtmlDocument record = Download(idRecord);
+
+            // Если html получить не удалось
+            if (record==null)
+            {
+                int i = 0; // кол-во попыток для запроса html
+                while (record==null | i < 10) 
+                {
+                    record = Download(idRecord);
+                    i++;
+                }
+
+                if (record == null)
+                {
+                    Thread t = Thread.CurrentThread;
+                    t.Abort();
+                    VRXParse.SaveError("Не удалось открыть страницу " + idRecord);
+                }
+            }
             //Console.WriteLine("Загрцзка " + idRecord + " окончена");
             //Console.WriteLine("");
 
@@ -71,24 +90,32 @@ namespace ParseVRX
         HtmlDocument Download(string url)
         {
 
-            using (var request = new HttpRequest())
+            try
             {
-                /*
-                Console.WriteLine("Загрузка страницы " + url);
-                HttpResponse response = request.Get(url);
-                Console.WriteLine("Загрузка страницы окончена");
-                Console.WriteLine("");
-                */
+                using (var request = new HttpRequest())
+                {
+                    /*
+                    Console.WriteLine("Загрузка страницы " + url);
+                    HttpResponse response = request.Get(url);
+                    Console.WriteLine("Загрузка страницы окончена");
+                    Console.WriteLine("");
+                    */
 
-                HttpResponse response = request.Get(url);
+                    HttpResponse response = request.Get(url);
 
-                string html = response.ToString();
-                HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
-                doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
+                    string html = response.ToString();
+                    HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
+                    doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
 
-                //File.WriteAllText("VRX_other.txt", html);
+                    //File.WriteAllText("VRX_other.txt", html);
 
-                return doc;
+                    return doc;
+                }
+            }
+            catch
+            {
+                //Thread.Sleep(5000);
+                return null;
             }
 
         }
@@ -140,7 +167,7 @@ namespace ParseVRX
                 }
 
             }
-            if (split1[0] != "-")
+            if ( split1[0] != "-" )
             {
                 sum += Convert.ToDecimal(split1[0].Replace(".", ","));
             }
