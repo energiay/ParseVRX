@@ -113,7 +113,10 @@ namespace ParseVRX
                 var reqParams = new RequestParams();
                 
                 reqParams["viewtype"] = "1";
-                reqParams["onpage"] = "100";          // Кол-во записей на странице
+                reqParams["onpage"] = "100";                // Кол-во записей на странице
+                reqParams["findadr"] = "(36000001000)";     // Искать по Воронежу-(36000001000)
+
+
                 //reqParams["findfolders"] = "(2)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
                 reqParams["findfolders"] = "("+ findfoldersParse + ")";   // Какой раздел отображаем (1-Вторичка, 2-Новостройка, 3-Нежмлое, 4-дома и котеджи, 5-участки, 6-гаражи)
                 reqParams["page"] = countPageParse.ToString();            // номер страницы для отображения
@@ -146,12 +149,12 @@ namespace ParseVRX
                 Console.WriteLine("Чтение страницы окончена");
                 Console.WriteLine("");
                 */
-                /*
+                
                 lock (lockerSave)
                 {
-                    File.WriteAllText("VRX.txt", html);
+                    File.WriteAllText("VRXhtml.txt", html);
                 }
-                */
+                
             }
 
 
@@ -228,6 +231,7 @@ namespace ParseVRX
         /// </summary>
         static public void SaveError(string saveRecord)
         {
+            saveRecord = "\n" + saveRecord;
             lock (lockerSaveError)
             {
                 File.AppendAllText("vrx_error.txt", VRX.Utf8ToWin1251(saveRecord), Encoding.GetEncoding("windows-1251"));

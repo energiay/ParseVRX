@@ -20,7 +20,8 @@ namespace ParseVRX
 
         public VRX (string web, string findfolders, int page)
         {
-            threadCount = 20;
+            threadCount = 1;
+            //threadCount = 20;
             pageParse = web;
             findfoldersParse = findfolders;
             //Thread thWatch = new Thread();
@@ -100,7 +101,7 @@ namespace ParseVRX
                 {
                     if ( thList[i] != null )
                     {
-                        if ((thList[i].ThreadState.ToString() == "Stopped") )
+                        if (thList[i].ThreadState.ToString() == "Stopped") 
                         {
                             Console.WriteLine("Thread#" + i + " завершил свою работу.");
                             thList[i] = null;
