@@ -48,6 +48,9 @@
     <Reference Include="xNet">
       <HintPath>..\..\..\..\Users\tl\Downloads\xNet.dll</HintPath>
     </Reference>
+    <Reference Include="YandexGeocoder">
+      <HintPath>..\..\..\GeoCode\GeoCode\YandexGeocoder.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parse.cs" />

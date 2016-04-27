@@ -18,6 +18,8 @@ namespace ParseVRX
         public static int countPageParse; // номер страцицы
         public static int countPageAll;   // общее кол-во страниц
 
+        public string namefile;
+
         string findfoldersParse;
         //string prePage = "&page="; // префикс для страниц
         
@@ -37,8 +39,9 @@ namespace ParseVRX
         /// Конструктор
         /// </summary>
         /// <param name="web">строка парсинга</param>
-        public VRXParse(string web, string findfolders, int page)
+        public VRXParse(string web, string findfolders, int page, string _namefile)
         {
+            namefile = _namefile;
             pageParse = web;
             findfoldersParse = findfolders;
             countPageParse = page;
@@ -70,8 +73,9 @@ namespace ParseVRX
         }
 
 
-        public VRXParse(string findfolders)
+        public VRXParse(string findfolders, string _namefile)
         {
+            namefile = _namefile;
             findfoldersParse = findfolders;
         }
 
@@ -112,10 +116,12 @@ namespace ParseVRX
             {
                 var reqParams = new RequestParams();
                 
+                reqParams["currency"] = "0";
+                reqParams["standart"] = "0";
                 reqParams["viewtype"] = "1";
+                
                 reqParams["onpage"] = "100";                // Кол-во записей на странице
                 reqParams["findadr"] = "(36000001000)";     // Искать по Воронежу-(36000001000)
-
 
                 //reqParams["findfolders"] = "(2)";   // Какой раздел отображаем (Вторичка, Новостройка, ...)
                 reqParams["findfolders"] = "("+ findfoldersParse + ")";   // Какой раздел отображаем (1-Вторичка, 2-Новостройка, 3-Нежмлое, 4-дома и котеджи, 5-участки, 6-гаражи)
@@ -222,7 +228,7 @@ namespace ParseVRX
         {
             lock (lockerSave)
             {
-                File.AppendAllText("vrx_all.csv", VRX.Utf8ToWin1251(saveRecord), Encoding.GetEncoding("windows-1251"));
+                File.AppendAllText(namefile, VRX.Utf8ToWin1251(saveRecord), Encoding.GetEncoding("windows-1251"));
             }
         }
 

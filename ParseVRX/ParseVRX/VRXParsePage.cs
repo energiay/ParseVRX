@@ -7,6 +7,7 @@ using xNet;
 using HtmlAgilityPack;
 using System.IO;
 using System.Threading;
+using Yandex;
 
 namespace ParseVRX
 {
@@ -14,6 +15,10 @@ namespace ParseVRX
     {
         public static string pageRecordParse = "http://www.vrx.ru/data/"; // Cтрока url для записи
         public static int count=0;
+
+        public static int countYandex=0;
+        static object lockerYandex = new object();
+
         public string saveRecord = "";
         string IdRecord= " idrecord ";
 
@@ -46,6 +51,7 @@ namespace ParseVRX
         string mailAgent = "";      // email агента
 
         string img = "";            // фото объектов в строке через запятую
+        string geoLocation = "";    // Координаты через - ","
 
 
         /*string water;
@@ -120,7 +126,7 @@ namespace ParseVRX
                     HtmlDocument doc = new HtmlDocument(); //Создаём экземпляр класса
                     doc.LoadHtml(html); //Загружаем в класс (парсер) наш html
 
-                    //File.WriteAllText("VRX_other.txt", html);
+                    //File.WriteAllText("VRX_Page.txt", html);
 
                     return doc;
                 }
@@ -176,8 +182,12 @@ namespace ParseVRX
             {
                 if (split[i] != "-")
                 {
-                    sum += Convert.ToDecimal(split[i].Replace(".", ","));
+                    if (split[i].IndexOf("тыс") < 0)
+                    {
+                        sum += Convert.ToDecimal(split[i].Replace(".", ","));
+                    }
                 }
+                
 
             }
             if ( split1[0] != "-" )
@@ -270,6 +280,55 @@ namespace ParseVRX
         }
 
 
+        void GetGeolocation(string _geolocation)
+        {
+            int i = 0;
+            
+            // "static-maps.yandex.ru"-строка от которой мы отталкиваемся для получения координат
+            i = _geolocation.IndexOf("static-maps.yandex.ru");
+
+            if (i > 0)
+            {
+                while (i < _geolocation.Count())
+                {
+                    if ((_geolocation[i] == '&') &&
+                        (_geolocation[i + 1] == 'l') &&
+                        (_geolocation[i + 2] == 'l') &&
+                        (_geolocation[i + 3] == '='))
+                    {
+                        var j = i + 4;
+                        while(_geolocation[j] != '&')
+                        {
+                            geoLocation += _geolocation[j];
+                            j++;
+                        }
+
+                    }
+                    i++;
+                }
+            }
+
+            
+            
+            if ((geoLocation == "") && (address != ""))
+            {
+                lock (lockerYandex)
+                {
+                    GeoObjectCollection results = YandexGeocoder.Geocode("Воронеж " + address, 1, LangType.ru_RU);
+                    foreach (GeoObject result in results)
+                    {
+                        if (results.Count() == 1)
+                        {
+                            geoLocation = result.Point.ToString();
+                            countYandex++;
+                        }
+                    }
+                }
+            }
+            
+        }
+
+
         void GetImg (string str)
         {
             int i = 0;
@@ -309,7 +368,7 @@ namespace ParseVRX
             //HtmlNode bodyNode = record.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
             HtmlNodeCollection pageNodes = record.DocumentNode.SelectNodes("//table[@class='text tbldetail']/tr/td");
 
-            if (pageNodes.Count > 1)
+            if (pageNodes != null)
             {
                 for (int j = 0; j < pageNodes.Count; j++)
                 {
@@ -432,6 +491,12 @@ namespace ParseVRX
                         GetFirm(pageNodes[j + 1].InnerText);
                     }
 
+                    if ((pageNodes[j].InnerText).IndexOf("На карте:") > -1)
+                    {
+                        GetGeolocation(pageNodes[j + 1].InnerHtml);
+                    }
+                    
+
 
 
                 }
@@ -441,9 +506,27 @@ namespace ParseVRX
                 VRXParse.SaveError(" (VRXParsePage) Не получена таблица из HTML: " + IdRecord);
             }
 
+            //HtmlNode bodyNode = record.DocumentNode.SelectSingleNode("//ul[@class='product-list']");
+            HtmlNodeCollection pageNodesPhoto = record.DocumentNode.SelectNodes("//table[@id='fotoview']/tr/td[@id='fotoview_list']");
 
-            //int i = 0;
-        }
+
+            if (pageNodesPhoto != null)
+            {
+                for (int j = 0; j < pageNodesPhoto.Count; j++)
+                {
+                    var str = pageNodesPhoto[j].InnerHtml;
+
+                    //string str777 = pageNodes[j].InnerHtml;
+                    if ((pageNodesPhoto[j].InnerHtml).IndexOf("mfoto") > -1)
+                    {
+                        GetImg(pageNodesPhoto[j].InnerHtml);
+                    }
+                 }
+             }
+
+
+                    //int i = 0;
+                }
 
 
 
@@ -567,7 +650,7 @@ namespace ParseVRX
             phoneAgent = phoneAgent.Replace(";", " ");
             mailAgent = mailAgent.Replace(";", " ");
 
-            return subject + ";" + location + ";" + place + ";" + address + ";" + area + ";" + floor + ";" + floorHouse + ";" + material + ";" + type + ";" + sector + ";" + price + ";" + firm + "," + fioAgent + "," + phoneAgent + "," + mailAgent + ";" + editDate + ";" + comment + ";" + "координаты"/*тут должны быть координаты*/ + ";" + "Продаётся " + RoomReplace(subject) + ", район " + location + ";" + Room2Optional(subject) +/*optional*/  ";" + Rayon2Optional(location)/*Rayon*/ + ";" + img/*тут пошел список картинок*/+ "\n";
+            return subject + ";" + location + ";" + place + ";" + address + ";" + area + ";" + floor + ";" + floorHouse + ";" + material + ";" + type + ";" + sector + ";" + price + ";" + firm + "," + fioAgent + "," + phoneAgent + "," + mailAgent + ";" + editDate + ";" + comment + ";" + geoLocation/*"координаты"тут должны быть координаты*/ + ";" + "Продаётся " + RoomReplace(subject) + ", район " + location + ";" + Room2Optional(subject) +/*optional*/  ";" + Rayon2Optional(location)/*Rayon*/ + ";" + img/*тут пошел список картинок*/+ "\n";
         }
 
 
