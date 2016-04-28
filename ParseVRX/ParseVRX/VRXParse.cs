@@ -155,11 +155,12 @@ namespace ParseVRX
                 Console.WriteLine("Чтение страницы окончена");
                 Console.WriteLine("");
                 */
-                
+                /*
                 lock (lockerSave)
                 {
                     File.WriteAllText("VRXhtml.txt", html);
                 }
+                */
                 
             }
 

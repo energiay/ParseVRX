@@ -319,12 +319,13 @@ namespace ParseVRX
                     {
                         if (results.Count() == 1)
                         {
-                            geoLocation = result.Point.ToString();
+                            geoLocation = result.Point.ToString().Replace(" ",",");
                             countYandex++;
                         }
                     }
                 }
             }
+            
             
         }
 

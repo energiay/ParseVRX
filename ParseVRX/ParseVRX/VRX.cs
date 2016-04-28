@@ -59,7 +59,7 @@ namespace ParseVRX
                 thList[thList.Count - 1].Start( new VRXParse(findfoldersParse, namefile) );
             }
 
-            ConsoleWriteLine("Всего страниц: "+ VRXParse.countPageAll + "по 100 объявлений");
+            ConsoleWriteLine("Всего страниц: "+ VRXParse.countPageAll + " по 100 объявлений");
 
             string sDot = "";
             while (VRXParse.countPageParse <= VRXParse.countPageAll)

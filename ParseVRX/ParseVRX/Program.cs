@@ -13,13 +13,13 @@ namespace ParseVRX
             string findfolders; int page;  // Параметры ПОСТ запроса
             string vtorichka = "vrx_Vtorichka";
             string novostrojki = "vrx_Novostrojki";
-
-            /*
-            
             string nezhil = "vrx_Nezhil";
             string doma_kottedzhi = "vrx_DomaKottedzhi";
             string uchastki = "vrx_Uchastki";
             string garazhi = "vrx_Garazhi";
+
+            /*
+            
             
             */
 
@@ -57,17 +57,18 @@ namespace ParseVRX
 
                 int consoleLogTop = 6;
                 web = "http://www.vrx.ru/data/base.php?city=36&apptype=1";
-                findfolders = "1";
                 page = 1;
 
 
 
                 //------------------- ВТОРИЧКА ---------------------
 
-                vtorichka += "_" + date[2] + "_" + date[1] + "_" + date[0]+".csv";
                 Console.WriteLine();
                 Console.WriteLine("Начало парсинга ВТОРИЧКИ: " + strDate);
-                vrxThread = new VRX(web,findfolders,page, vtorichka, consoleLogTop);
+
+                findfolders = "1";
+                vtorichka += "_" + date[2] + "_" + date[1] + "_" + date[0]+".csv";
+                vrxThread = new VRX(web,findfolders,page, vtorichka, consoleLogTop); //парсим
 
                 // получение сегодняшней даты и времени
                 strDate = DateTime.Now.ToString();
@@ -84,8 +85,8 @@ namespace ParseVRX
 
                 findfolders = "2";
                 novostrojki += "_" + date[2] + "_" + date[1] + "_" + date[0] + ".csv";
-                vrxThread = new VRX(web, findfolders, page, novostrojki, consoleLogTop+4); //+2
-                
+                vrxThread = new VRX(web, findfolders, page, novostrojki, consoleLogTop+4); //+2 //парсим
+
                 // получение сегодняшней даты и времени
                 strDate = DateTime.Now.ToString();
                 Console.SetCursorPosition(0, consoleLogTop + 5); //+1
@@ -94,7 +95,7 @@ namespace ParseVRX
 
 
                 //------------------- НЕЖИЛОЕ ---------------------
-                /*
+
                 Console.SetCursorPosition(0, consoleLogTop + 6); //+1
                 Console.WriteLine("");
                 Console.WriteLine("Начало парсинга НЕЖИЛЫХ: " + strDate);
@@ -106,7 +107,58 @@ namespace ParseVRX
                 // получение сегодняшней даты и времени
                 strDate = DateTime.Now.ToString();
                 Console.SetCursorPosition(0, consoleLogTop + 9); //+1
-                Console.WriteLine("Окончание парсинга НЕЖИЛЫХ: " + strDate);*/
+                Console.WriteLine("Окончание парсинга НЕЖИЛЫХ: " + strDate);
+
+
+
+                //------------------- Дома и коттеджи ---------------------
+
+                Console.SetCursorPosition(0, consoleLogTop + 10); //+1
+                Console.WriteLine("");
+                Console.WriteLine("Начало парсинга ДОМА и КОТТЕДЖИ: " + strDate);
+
+                findfolders = "4";
+                doma_kottedzhi += "_" + date[2] + "_" + date[1] + "_" + date[0] + ".csv";
+                vrxThread = new VRX(web, findfolders, page, doma_kottedzhi, consoleLogTop + 12); //+2
+
+                // получение сегодняшней даты и времени
+                strDate = DateTime.Now.ToString();
+                Console.SetCursorPosition(0, consoleLogTop + 13); //+1
+                Console.WriteLine("Окончание парсинга ДОМА и КОТТЕДЖИ: " + strDate);
+
+
+
+                //------------------- Участки ---------------------
+
+                Console.SetCursorPosition(0, consoleLogTop + 14); //+1
+                Console.WriteLine("");
+                Console.WriteLine("Начало парсинга УЧАСТКИ: " + strDate);
+
+                findfolders = "5";
+                uchastki += "_" + date[2] + "_" + date[1] + "_" + date[0] + ".csv";
+                vrxThread = new VRX(web, findfolders, page, uchastki, consoleLogTop + 16); //+2
+
+                // получение сегодняшней даты и времени
+                strDate = DateTime.Now.ToString();
+                Console.SetCursorPosition(0, consoleLogTop + 17); //+1
+                Console.WriteLine("Окончание парсинга УЧАСТКИ: " + strDate);
+
+
+
+                //------------------- Гаражи ---------------------
+
+                Console.SetCursorPosition(0, consoleLogTop + 18); //+1
+                Console.WriteLine("");
+                Console.WriteLine("Начало парсинга ГАРАЖИ: " + strDate);
+
+                findfolders = "6";
+                garazhi += "_" + date[2] + "_" + date[1] + "_" + date[0] + ".csv";
+                vrxThread = new VRX(web, findfolders, page, uchastki, consoleLogTop + 20); //+2
+
+                // получение сегодняшней даты и времени
+                strDate = DateTime.Now.ToString();
+                Console.SetCursorPosition(0, consoleLogTop + 21); //+1
+                Console.WriteLine("Окончание парсинга ГАРАЖИ: " + strDate);
             }
             else
             {
