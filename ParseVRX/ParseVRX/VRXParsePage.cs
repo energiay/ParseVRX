@@ -309,7 +309,7 @@ namespace ParseVRX
             }
 
             
-            
+            /*
             if ((geoLocation == "") && (address != ""))
             {
                 lock (lockerYandex)
@@ -325,7 +325,7 @@ namespace ParseVRX
                     }
                 }
             }
-            
+            */
             
         }
 

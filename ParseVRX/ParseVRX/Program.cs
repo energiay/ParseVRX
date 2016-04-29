@@ -127,7 +127,7 @@ namespace ParseVRX
                 Console.WriteLine("Окончание парсинга ДОМА и КОТТЕДЖИ: " + strDate);
 
 
-
+                
                 //------------------- Участки ---------------------
 
                 Console.SetCursorPosition(0, consoleLogTop + 14); //+1
